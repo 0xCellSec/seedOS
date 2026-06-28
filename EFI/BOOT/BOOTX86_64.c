@@ -5,8 +5,33 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
   InitializeLib(ImageHandle, SystemTable);
   SystemTable->ConOut->Reset(SystemTable->ConOut, FALSE);
-  
+
   Print(L"Welcome user to Seed OS\n");
+  // MEMORY MAP
+  UINTN mapSize = 0;
+  UINTN mapKey = 0;
+  UINTN descriptorSize = 0;
+  UINT32 descriptorVersion = 0;
+  EFI_MEMORY_DESCRIPTOR *MemoryMap = NULL;
+
+  EFI_STATUS status = SystemTable->BootServices->GetMemoryMap(&mapSize, NULL, &mapKey, &descriptorSize, &descriptorVersion);
+
+  if (status == EFI_BUFFER_TOO_SMALL) {
+    Print(L"Memory Map Size: %lu\n", mapSize);
+    mapSize += descriptorSize * 8;
+    status = SystemTable->BootServices->AllocatePool(EfiLoaderData, mapSize, (void**)&MemoryMap);
+    
+  }
+
+  status = SystemTable->BootServices->GetMemoryMap(&mapSize, MemoryMap, &mapKey, &descriptorSize, &descriptorVersion);
+
+  if (EFI_ERROR(status))
+  {
+    Print(L"Something went wrong: %r\n", status);
+    return status;
+      
+  }
+
   Print(L"Press any key to continue...\n");
 
   // Wait for a key press
