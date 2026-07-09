@@ -1,5 +1,4 @@
 .git
 
 # makefile creations
-*NvVars
-*startup.nsh
+/image
